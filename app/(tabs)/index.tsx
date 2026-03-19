@@ -2,17 +2,27 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react'; // ★ useState가 추가되었습니다!
 import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native'; // ★ TouchableOpacity 추가!
 import { styles } from './homeStyles';
+//npx expo start --tunnel 실행
 
 export default function App() {
   // ★ 1. 현재 선택된 탭을 기억하는 '상태(State)' 만들기 (기본값: '오늘의 일정')
   const [activeTab, setActiveTab] = useState('오늘의 일정');
 
+// ★ 날짜 자동 계산 코드
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // 컴퓨터는 달을 0부터 세기 때문에 1을 더해줍니다.
+  const date = today.getDate();
+  const week = ['일', '월', '화', '수', '목', '금', '토'];
+  const dayOfWeek = week[today.getDay()];
+
+  const currentDateString = `${year}년 ${month}월 ${date}일 ${dayOfWeek}요일`;
   // ★ 2. 선택된 탭에 따라 아래에 보여줄 화면을 다르게 그려주는 함수
   const renderContent = () => {
     if (activeTab === '오늘의 일정') {
       return (
         <View style={styles.contentContainer}>
-          <Text style={styles.dateText}>2026년 3월 16일 월요일</Text>
+          <Text style={styles.dateText}>{currentDateString}</Text>
           <View style={styles.emptyBox}>
             <MaterialCommunityIcons name="clock-outline" size={48} color="#A0A0A0" />
             <Text style={styles.emptyText}>오늘 복용할 약이 없습니다</Text>

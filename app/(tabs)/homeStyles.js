@@ -1,10 +1,12 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet } from 'react-native';
 
 // index.tsx에서 쓸 수 있도록 'export'를 붙여서 밖으로 내보냅니다.
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F4F6FB', // 배경색 (연한 파스텔 블루)
+    //안드로이드면 상태바 높이
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   scrollContent: {
     padding: 20,

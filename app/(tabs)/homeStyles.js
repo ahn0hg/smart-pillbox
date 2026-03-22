@@ -1,19 +1,18 @@
 import { Platform, StatusBar, StyleSheet } from 'react-native';
 
-// index.tsx에서 쓸 수 있도록 'export'를 붙여서 밖으로 내보냅니다.
-export const styles = StyleSheet.create({
+export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB', // 배경색 (연한 파스텔 블루)
-    //안드로이드면 상태바 높이
+    backgroundColor: '#F4F6FB',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 40,
   },
   /* 헤더 스타일 */
   header: {
-    flexDirection: 'row', // 가로 배치
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
   },
@@ -33,7 +32,7 @@ export const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
-  /* 카드 스타일 */
+  /* 카드 요약 영역 */
   summaryContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -44,7 +43,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderRadius: 12,
-    marginHorizontal: 4, // 카드 사이 간격
+    marginHorizontal: 4,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -92,9 +91,8 @@ export const styles = StyleSheet.create({
   tabTextActive: {
     color: '#333',
     fontWeight: 'bold',
-    fontSize: 14,
   },
-  /* 콘텐츠 스타일 */
+  /* 하단 콘텐츠 영역 */
   contentContainer: {
     flex: 1,
   },
@@ -115,5 +113,28 @@ export const styles = StyleSheet.create({
     color: '#888',
     marginTop: 12,
     fontSize: 15,
-  }
+  },
+  /* 약 등록 카드 */
+  registrationCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  regTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  cameraBox: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    padding: 40,
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#F9FAFB'
+  },
 });

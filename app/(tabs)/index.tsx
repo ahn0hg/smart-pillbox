@@ -1,125 +1,59 @@
+// 탭기능
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useState } from 'react'; // ★ useState가 추가되었습니다!
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native'; // ★ TouchableOpacity 추가!
-import { styles } from './homeStyles';
-//npx expo start --tunnel 실행
+import React, { useState } from 'react';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+
+// ★ 스타일 파일 불러오기
+import { globalStyles as styles } from './styles';
+
+import ChatScreen from './ChatScreen';
+import GuardScreen from './GuardScreen';
+import HomeScreen from './HomeScreen';
+import SettingScreen from './SettingScreen';
 
 export default function App() {
-  // ★ 1. 현재 선택된 탭을 기억하는 '상태(State)' 만들기 (기본값: '오늘의 일정')
-  const [activeTab, setActiveTab] = useState('오늘의 일정');
-
-// ★ 날짜 자동 계산 코드
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1; // 컴퓨터는 달을 0부터 세기 때문에 1을 더해줍니다.
-  const date = today.getDate();
-  const week = ['일', '월', '화', '수', '목', '금', '토'];
-  const dayOfWeek = week[today.getDay()];
-
-  const currentDateString = `${year}년 ${month}월 ${date}일 ${dayOfWeek}요일`;
-  // ★ 2. 선택된 탭에 따라 아래에 보여줄 화면을 다르게 그려주는 함수
-  const renderContent = () => {
-    if (activeTab === '오늘의 일정') {
-      return (
-        <View style={styles.contentContainer}>
-          <Text style={styles.dateText}>{currentDateString}</Text>
-          <View style={styles.emptyBox}>
-            <MaterialCommunityIcons name="clock-outline" size={48} color="#A0A0A0" />
-            <Text style={styles.emptyText}>오늘 복용할 약이 없습니다</Text>
-          </View>
-        </View>
-      );
-    } else if (activeTab === '내 약 목록') {
-      return (
-        <View style={styles.contentContainer}>
-          <Text style={styles.dateText}>등록된 약 목록</Text>
-          <View style={styles.emptyBox}>
-            <MaterialCommunityIcons name="pill" size={48} color="#A0A0A0" />
-            <Text style={styles.emptyText}>아직 등록된 약이 없습니다</Text>
-          </View>
-        </View>
-      );
-    } else if (activeTab === '통계') {
-      return (
-        <View style={styles.contentContainer}>
-          <Text style={styles.dateText}>주간 복약 통계</Text>
-          <View style={styles.emptyBox}>
-            <MaterialCommunityIcons name="chart-bar" size={48} color="#A0A0A0" />
-            <Text style={styles.emptyText}>통계 데이터가 아직 없습니다</Text>
-          </View>
-        </View>
-      );
-    }
-  };
+  const [mainTab, setMainTab] = useState('홈');
+  const [isGuardian, setIsGuardian] = useState(true);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        
-        {/* 헤더 영역 (변경 없음) */}
-        <View style={styles.header}>
-          <View style={styles.iconBox}>
-            <MaterialCommunityIcons name="pill" size={24} color="#FFF" />
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>스마트 복약지도</Text>
-            <Text style={styles.headerSubtitle}>건강한 복약 습관을 만들어보세요</Text>
-          </View>
-        </View>
+      <View style={{ flex: 1 }}>
+        {mainTab === '홈' && <HomeScreen />}
+        {mainTab === '채팅' && <ChatScreen />}
+        {mainTab === '보호자' && <GuardScreen />}
+        {mainTab === '설정' && <SettingScreen />}
+      </View>
 
-        {/* 요약 카드 영역 (변경 없음) */}
-        <View style={styles.summaryContainer}>
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>✔️ 복용 완료</Text>
-            <Text style={styles.cardValue}>0<Text style={styles.cardValueSmall}>/0</Text></Text>
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>🕒 예정</Text>
-            <Text style={styles.cardValue}>0</Text>
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>📈 복약 순응도</Text>
-            <Text style={styles.cardValue}>0%</Text>
-          </View>
-        </View>
-
-        {/* ★ 3. 탭 메뉴 영역 (View -> TouchableOpacity로 변경) */}
-        <View style={styles.tabContainer}>
-          {/* 오늘의 일정 버튼 */}
-          <TouchableOpacity 
-            style={[styles.tabButton, activeTab === '오늘의 일정' && styles.tabActive]} 
-            onPress={() => setActiveTab('오늘의 일정')}
-          >
-            <Text style={activeTab === '오늘의 일정' ? styles.tabTextActive : styles.tabText}>
-              📅 오늘의 일정
-            </Text>
-          </TouchableOpacity>
-
-          {/* 내 약 목록 버튼 */}
-          <TouchableOpacity 
-            style={[styles.tabButton, activeTab === '내 약 목록' && styles.tabActive]} 
-            onPress={() => setActiveTab('내 약 목록')}
-          >
-            <Text style={activeTab === '내 약 목록' ? styles.tabTextActive : styles.tabText}>
-              💊 내 약 목록
-            </Text>
-          </TouchableOpacity>
-
-          {/* 통계 버튼 */}
-          <TouchableOpacity 
-            style={[styles.tabButton, activeTab === '통계' && styles.tabActive]} 
-            onPress={() => setActiveTab('통계')}
-          >
-            <Text style={activeTab === '통계' ? styles.tabTextActive : styles.tabText}>
-              📊 통계
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ★ 4. 메인 콘텐츠 출력 (위에서 만든 함수 실행) */}
-        {renderContent()}
-
-      </ScrollView>
+      <View style={styles.bottomBar}>
+        <TabButton name="홈" icon="home" current={mainTab} setTab={setMainTab} />
+        <TabButton name="채팅" icon="chat" current={mainTab} setTab={setMainTab} />
+        {isGuardian && <TabButton name="보호자" icon="shield-check" current={mainTab} setTab={setMainTab} />}
+        <TabButton name="설정" icon="cog" current={mainTab} setTab={setMainTab} />
+      </View>
     </SafeAreaView>
+  );
+}
+
+// 공통 탭 버튼 컴포넌트
+interface TabButtonProps {
+  name: string;
+  icon: any;
+  current: string;
+  setTab: (name: string) => void;
+}
+
+function TabButton({ name, icon, current, setTab }: TabButtonProps) {
+  const active = current === name;
+  return (
+    <TouchableOpacity style={styles.bottomBtn} onPress={() => setTab(name)}>
+      <MaterialCommunityIcons 
+        name={active ? icon : `${icon}-outline`} 
+        size={26} 
+        color={active ? "#5C6BC0" : "#A0A0A0"} 
+      />
+      <Text style={[styles.bottomText, active && { color: "#5C6BC0", fontWeight: 'bold' }]}>
+        {name}
+      </Text>
+    </TouchableOpacity>
   );
 }

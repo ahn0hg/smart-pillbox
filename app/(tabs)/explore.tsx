@@ -1,112 +1,99 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// app/(tabs)/explore.tsx
+import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { exploreStyles as styles } from '../../styles/exploreStyles';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
-
-export default function TabTwoScreen() {
+// 탭 버튼 전용 컴포넌트
+function TabBtn({ label, isActive }: { label: string; isActive: boolean }) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <TouchableOpacity 
+      style={{
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        backgroundColor: isActive ? '#E8F0FE' : 'transparent',
+      }}
+    >
+      <Text style={{ fontSize: 13, fontWeight: '600', color: isActive ? '#1976D2' : '#666' }}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});
+// 상단 요약 카드 전용 컴포넌트
+function SummaryCard({ icon, value, unit, color }: { icon: string; value: string; unit: string; color: string }) {
+  return (
+    <View style={styles.summaryCard}>
+      <MaterialCommunityIcons name={icon as any} size={28} color={color} />
+      <Text style={styles.cardValue}>{value}</Text>
+      <Text style={styles.cardUnit}>{unit}</Text>
+    </View>
+  );
+}
+
+export default function ExploreScreen() {
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        
+        {/* 1. 상단 요약 카드 섹션 */}
+        <View style={styles.summaryRow}>
+          <SummaryCard icon="calendar-check" value="7" unit="연속 복용" color="#2196F3" />
+          <SummaryCard icon="trending-up" value="94%" unit="이번 달" color="#4CAF50" />
+          <SummaryCard icon="trophy-outline" value="30" unit="완벽한 날" color="#FFC107" />
+        </View>
+
+        {/* 2. 복약 기록 차트 섹션 */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>복약 기록</Text>
+            {/* 일간/주간/월간 탭 (이미지처럼 구현) */}
+            <View style={{ flexDirection: 'row', backgroundColor: '#F1F3F4', borderRadius: 20, padding: 2 }}>
+              <TabBtn label="일간" isActive={activeTab === 'daily'} />
+              <TabBtn label="주간" isActive={activeTab === 'weekly'} />
+              <TabBtn label="월간" isActive={activeTab === 'monthly'} />
+            </View>
+          </View>
+          
+          <Text style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>2026년 3월 25일 (오늘)</Text>
+          
+          {/* 차트 임시 영역 (나중에 라이브러리 추가 시 교체) */}
+          <View style={styles.chartPlaceholder}>
+            <MaterialCommunityIcons name="chart-bar" size={60} color="#DADCE0" />
+            <Text style={styles.chartLabel}>여기에 실제 복약 차트가 들어갑니다</Text>
+            <Text style={styles.chartLabel}>(예: 08:00, 12:00, 18:00 복약 여부)</Text>
+          </View>
+        </View>
+
+        {/* 3. 이번 달 성과 섹션 */}
+        <View style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { marginBottom: 15 }]}>이번 달 성과</Text>
+          
+          {/* 완벽한 복약 (노란색 상자) */}
+          <View style={styles.achievementBox}>
+            <FontAwesome5 name="award" size={24} color="#FFD700" />
+            <View>
+              <Text style={styles.achievementText}>완벽한 복약</Text>
+              <Text style={{ fontSize: 12, color: '#7F6D00', marginLeft: 10, marginTop: 2 }}>7일 연속 달성 중!</Text>
+            </View>
+          </View>
+
+          {/* 하단 미니 통계 카드 2개 */}
+          <View style={styles.miniStatsRow}>
+            <View style={styles.miniStatCard}>
+              <Text style={[styles.miniStatValue, { color: '#1976D2' }]}>28</Text>
+              <Text style={styles.miniStatLabel}>완료한 날</Text>
+            </View>
+            <View style={styles.miniStatCard}>
+              <Text style={[styles.miniStatValue, { color: '#4CAF50' }]}>112</Text>
+              <Text style={styles.miniStatLabel}>총 복용 횟수</Text>
+            </View>
+          </View>
+        </View>
+
+      </ScrollView>
+    </SafeAreaView>
+  );
+}

@@ -42,12 +42,6 @@ app-example
 /ios
 /android
 
-<<<<<<< HEAD
-# Firebase Config
-firebaseConfig.ts
-.env
-=======
-
 # env
 .env
 .env.local

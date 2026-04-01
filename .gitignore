@@ -42,6 +42,15 @@ app-example
 /ios
 /android
 
+<<<<<<< HEAD
 # Firebase Config
 firebaseConfig.ts
 .env
+=======
+
+# env
+.env
+.env.local
+.env.common.local
+.env.*
+>>>>>>> 9e91a47 (Security: 환경 변수 적용 및 설정 파일 추적 제외)

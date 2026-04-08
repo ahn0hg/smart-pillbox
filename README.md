@@ -1,5 +1,5 @@
 # Smart Pillbox
-
+팀원로고
 ## 프로젝트 개요
 <p>
   <img src="https://github.com/user-attachments/assets/ff4d27d6-0257-44c6-8cd6-1bca753e1df4" width="48%">

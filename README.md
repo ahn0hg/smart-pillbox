@@ -10,6 +10,7 @@
 </p>
 
 ## 프로젝트 소개
+<img src="https://github.com/user-attachments/assets/00311d5a-f755-4543-ad78-261a7320c819" width="85%"/>
 
 
 ## 🛠️ 개발 환경
@@ -29,8 +30,7 @@
 
 </p>
 <p>
-SQL (이미지 추가 예정)
-Firebase (이미지 추가 예정)
+SQL (이미지 추가 예정) / Firebase (이미지 추가 예정)
 </p>
 
 ## 주요기능

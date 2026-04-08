@@ -10,8 +10,9 @@
 </p>
 
 ## 프로젝트 소개
-<img src="https://github.com/user-attachments/assets/00311d5a-f755-4543-ad78-261a7320c819" width="85%"/>
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/00311d5a-f755-4543-ad78-261a7320c819" width="85%"/>
+</p>
 
 ## 🛠️ 개발 환경
 

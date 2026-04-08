@@ -28,8 +28,10 @@
   <img src="https://github.com/user-attachments/assets/3f6d4eb8-97f4-491d-bd4c-5c64fbb99c43" width="85%"/>
 
 </p>
+<p>
 SQL (이미지 추가 예정)
 Firebase (이미지 추가 예정)
+</p>
 
 ## 주요기능
 

@@ -11,13 +11,25 @@
 
 ## 프로젝트 소개
 
-## 개발 환경
+
+## 🛠️ 개발 환경
+
+- **Front-end** : Expo (React Native)
+- **Back-end** : Spring Boot, Node.js
+- **Database** : MySQL,
+- **Service** : Firebase
+- **Design** : Figma
+
+
 
 ## 프로젝트
+시스템 구성도
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3f6d4eb8-97f4-491d-bd4c-5c64fbb99c43" width="85%"/>
 
-## SQL
-
-## Firebase
+</p>
+SQL (이미지 추가 예정)
+Firebase (이미지 추가 예정)
 
 ## 주요기능
 

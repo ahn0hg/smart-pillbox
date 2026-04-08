@@ -8,6 +8,7 @@
 <p>
   <img src="https://github.com/user-attachments/assets/1e603f2b-d52a-4cef-b9d5-5837d3c2baf1" width="48%">
 </p>
+
 ## 프로젝트 소개
 
 ## 개발 환경

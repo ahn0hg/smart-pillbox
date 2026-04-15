@@ -18,7 +18,7 @@
 
 - **Front-end** : Expo (React Native)
 - **Back-end** : Spring Boot, Node.js
-- **Database** : MySQL,
+- **Database** : MySQL
 - **Service** : Firebase
 - **Design** : Figma
 

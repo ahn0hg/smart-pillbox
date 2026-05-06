@@ -1,50 +1,45 @@
-# Welcome to your Expo app 👋
+# Smart Pillbox
+팀원로고
+## 프로젝트 개요
+<p>
+  <img src="https://github.com/user-attachments/assets/ff4d27d6-0257-44c6-8cd6-1bca753e1df4" width="48%">
+  <img src="https://github.com/user-attachments/assets/09dc3c69-dc12-4d36-9ba3-32d960942be2" width="48%">
+</p>
+<p>
+  <img src="https://github.com/user-attachments/assets/1e603f2b-d52a-4cef-b9d5-5837d3c2baf1" width="48%">
+</p>
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 프로젝트 소개
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/00311d5a-f755-4543-ad78-261a7320c819" width="85%"/>
+</p>
 
-## Get started
+## 🛠️ 개발 환경
 
-1. Install dependencies
+- **Front-end** : Expo (React Native)
+- **Back-end** : Spring Boot, Node.js
+- **Database** : MySQL
+- **Service** : Firebase
+- **Design** : Figma
 
-   ```bash
-   npm install
-   ```
 
-2. Start the app
 
-   ```bash
-   npx expo start
-   ```
+## 프로젝트
+시스템 구성도
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3f6d4eb8-97f4-491d-bd4c-5c64fbb99c43" width="85%"/>
 
-In the output, you'll find options to open the app in a
+</p>
+<p>
+SQL (이미지 추가 예정) / Firebase (이미지 추가 예정)
+</p>
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 주요기능
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## ?
+팀원 소개
+프로젝트 계획서 ppt
+프로젝트 최종 발표 ppt
+시연 영상 
+느낀점
+코드

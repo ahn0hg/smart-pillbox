@@ -30,12 +30,13 @@ app.get('/', (req, res) => {
 
 // 1. 회원가입 API
 app.post('/api/signup', (req, res) => {
-  const { userId, password, name, phone, role } = req.body;
-  const query = 'INSERT INTO users (userId, password, name, phone, role) VALUES (?, ?, ?, ?, ?)';
+  // 프론트에서 uid를 추가로 보내줘야 합니다.
+  const { uid, userId, password, name, phone, role } = req.body; 
+  const query = 'INSERT INTO users (uid, userId, password, name, phone, role) VALUES (?, ?, ?, ?, ?, ?)';
   
-  db.query(query, [userId, password, name, phone, role], (err, result) => {
+  db.query(query, [uid, userId, password, name, phone, role], (err, result) => {
     if (err) {
-      console.error("❌ MySQL 에러 상세:", err);
+      console.error("❌ MySQL 에러:", err);
       return res.status(500).json({ message: 'DB 저장 실패', error: err.message });
     }
     res.status(201).json({ message: '회원가입 성공!' });
@@ -93,4 +94,30 @@ app.post('/api/relation', (req, res) => {
 
 app.listen(port, () => {
   console.log(`🚀 서버가 http://localhost:${port} 에서 실행 중입니다.`);
+});
+
+// [4번 기능] 어르신 ID로 보호자 전화번호 조회 API
+app.get('/api/protector-phone/:seniorId', (req, res) => {
+  const { seniorId } = req.params;
+
+  // ★ 수정 포인트: u.userId(이메일) 대신 u.uid(Firebase UID)를 사용하도록 JOIN 조건 변경
+  const query = `
+    SELECT u.phone 
+    FROM users u
+    JOIN relations r ON u.uid = r.protectorId
+    WHERE r.seniorId = ?
+  `;
+
+  db.query(query, [seniorId], (err, results) => {
+    if (err) {
+      console.error("❌ 보호자 번호 조회 에러:", err);
+      return res.status(500).json({ message: '서버 오류', error: err.message });
+    }
+
+    if (results.length > 0) {
+      res.status(200).json({ phoneNumber: results[0].phone });
+    } else {
+      res.status(404).json({ message: '연결된 보호자 번호가 없습니다.' });
+    }
+  });
 });

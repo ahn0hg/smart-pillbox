@@ -19,7 +19,7 @@ import {
 
 // 서버 주소 설정 (에뮬레이터 환경 대응)
 const SERVER_URL = Platform.OS === 'android' 
-  ? 'http://10.0.2.2:3000' 
+  ? 'http://192.168.45.138:3000' 
   : 'http://localhost:3000';
 
 export default function AuthScreen() {
@@ -40,15 +40,14 @@ export default function AuthScreen() {
     setLoading(true);
     try {
       if (isLoginMode) {
-        // --- [1] Firebase 로그인 ---
+        // Firebase 로그인
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const fbUser = userCredential.user;
         console.log("Firebase 로그인 성공:", fbUser.uid);
 
-        // --- [2] MySQL 서버 로그인 (수정된 부분) ---
+        // MySQL 서버 로그인
         try {
-          // 🔍 1. 경로를 /api/login 으로 변경하세요.
-          // 🔍 2. 로그인할 때는 이메일과 비번만 보내면 됩니다.
+
           const response = await axios.post(`${SERVER_URL}/api/login`, {
             userId: email,
             password: password
@@ -63,7 +62,7 @@ export default function AuthScreen() {
           Alert.alert("로그인 오류", "등록된 사용자 정보를 찾을 수 없습니다.");
         }
     } else {
-        // --- [2] 회원가입: 하이브리드 로직 실행 ---
+        //[2] 회원가입: 하이브리드 로직 실행 
         
         // A. Firebase Auth 계정 생성 (인증용)
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);

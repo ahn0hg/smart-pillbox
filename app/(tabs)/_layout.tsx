@@ -1,5 +1,7 @@
 // 실행 npx expo start w
 // npx expo start --tunnel
+// cd server
+//nodemon index.js
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';

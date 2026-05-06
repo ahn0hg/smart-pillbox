@@ -33,7 +33,7 @@ function SettingSwitch({ label, subLabel, value, onValueChange }: any) {
 }
 
 const SERVER_URL = Platform.OS === 'android' 
-  ? 'http://10.0.2.2:3000' 
+  ? 'http://192.168.45.138:3000'
   : 'http://localhost:3000';
 
 export default function SettingScreen() {

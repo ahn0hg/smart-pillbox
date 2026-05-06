@@ -1,11 +1,12 @@
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { onValue, ref, update } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Modal, SafeAreaView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Linking, Modal, SafeAreaView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { auth, db } from '../../firebaseConfig';
 import { useAlertHistory, useAlertListener } from '../../src/chatfunction'; // ★ useAlertHistory 추가
 import { seniorHomeStyles as styles } from '../../styles/seniorHomeStyles';
+
 
 export default function SeniorHomeScreen() {
   const [dateStr, setDateStr] = useState('');
@@ -15,10 +16,9 @@ export default function SeniorHomeScreen() {
   const [isBluetoothConnected, setIsBluetoothConnected] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
 
-  // 1. 로그 확인을 위한 상태와 훅
   const [historyVisible, setHistoryVisible] = useState(false);
   const { history, fetchHistory, loading } = useAlertHistory();
-
+  const [protectorPhone, setProtectorPhone] = useState('');
   useAlertListener();
   
   useEffect(() => {
@@ -30,6 +30,39 @@ export default function SeniorHomeScreen() {
     });
     return () => unsubscribe();
   }, []);
+
+
+  useEffect(() => {
+    const getPhone = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          // EXPO_PUBLIC_API_URL은 .env에 설정된 서버 주소입니다.
+          const baseUrl = process.env.EXPO_PUBLIC_API_URL; 
+          const response = await fetch(`${baseUrl}/api/protector-phone/${user.uid}`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            setProtectorPhone(data.phoneNumber);
+          }
+        }
+      } catch (error) {
+        console.error("보호자 번호 로드 중 오류:", error);
+      }
+    };
+    getPhone();
+  }, []);
+
+  // 2. 전화기 버튼 클릭 핸들러
+  const handleCallPress = () => {
+    if (protectorPhone) {
+      Linking.openURL(`tel:${protectorPhone}`).catch(() => 
+        Alert.alert("오류", "전화 앱을 열 수 없습니다.")
+      );
+    } else {
+      Alert.alert("알림", "연결된 보호자 번호가 없습니다.");
+    }
+  };
 
   const toggleLock = () => {
     const user = auth.currentUser;
@@ -102,14 +135,20 @@ export default function SeniorHomeScreen() {
         </View>
       </View>
 
-      <View style={styles.bottomActionArea}>
-        <TouchableOpacity style={[styles.hugeCircleBtn, styles.callBtn]} activeOpacity={0.8}>
-          <FontAwesome5 name="phone-alt" size={65} color="#FFFFFF" />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.hugeSirenBtn, styles.sirenBtn]} activeOpacity={0.8}>
-          <MaterialCommunityIcons name="alert-octagon" size={85} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
+<View style={styles.bottomActionArea}>
+  {/* ★ onPress에 handleCallPress를 연결합니다 ★ */}
+  <TouchableOpacity 
+    style={[styles.hugeCircleBtn, styles.callBtn]} 
+    activeOpacity={0.8}
+    onPress={handleCallPress} 
+  >
+    <FontAwesome5 name="phone-alt" size={65} color="#FFFFFF" />
+  </TouchableOpacity>
+
+  <TouchableOpacity style={[styles.hugeSirenBtn, styles.sirenBtn]} activeOpacity={0.8}>
+    <MaterialCommunityIcons name="alert-octagon" size={85} color="#FFFFFF" />
+  </TouchableOpacity>
+</View>
 
       {/* --- 전송 기록 모달 (어르신용) --- */}
       <Modal visible={historyVisible} animationType="slide" transparent={true}>

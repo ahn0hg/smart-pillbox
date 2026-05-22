@@ -7,8 +7,7 @@ import { auth, db } from '../firebaseConfig';
 
 import {
   ActivityIndicator,
-  Alert,
-  Platform, // ★ 추가됨
+  Alert, // ★ 추가됨
   StyleSheet,
   Switch,
   Text,
@@ -18,9 +17,7 @@ import {
 } from 'react-native';
 
 // 서버 주소 설정 (에뮬레이터 환경 대응)
-const SERVER_URL = Platform.OS === 'android' 
-  ? 'http://192.168.45.138:3000' 
-  : 'http://localhost:3000';
+const SERVER_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.45.70:3000';
 
 export default function AuthScreen() {
   const [isLoginMode, setIsLoginMode] = useState(true);

@@ -10,7 +10,7 @@ import {
   update
 } from 'firebase/database';
 import React, { useEffect, useState, } from 'react';
-import { ActivityIndicator, Alert, Modal, Platform, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { settingStyles as styles } from '../../styles/settingStyles';
 
 // --- 파이어베이스 관련 임포트 ---
@@ -32,9 +32,7 @@ function SettingSwitch({ label, subLabel, value, onValueChange }: any) {
   );
 }
 
-const SERVER_URL = Platform.OS === 'android' 
-  ? 'http://192.168.45.138:3000'
-  : 'http://localhost:3000';
+const SERVER_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function SettingScreen() {
   const router = useRouter();
@@ -155,25 +153,32 @@ const handleSearchGuardian = async () => {
     const phoneQuery = query(usersRef, orderByChild('profile/phone'), equalTo(tempPhone));
     const snapshot = await get(phoneQuery);
 
-    if (snapshot.exists()) {
+if (snapshot.exists()) {
       const data = snapshot.val();
+      const uids = Object.keys(data);
       
-      // 🔍 중요: 데이터의 Key값이 바로 'S604...' 같은 진짜 UID(actualUid)입니다.
-      // 이 값을 gUid로 전달해야 'invalid key (a@a.com)' 에러가 안 납니다.
-      const actualUid = Object.keys(data)[0]; 
-      
-      // 데이터 구조에 따라 이름 위치 확인 (profile.name 또는 name)
-      const gName = data[actualUid].name || data[actualUid].profile?.name || mysqlUser.name;
+      if (uids.length === 0) {
+        setLoading(false);
+        Alert.alert("알림", "사용자 정보를 찾을 수 없습니다.");
+        return;
+      }
 
-      // [STEP 3] 사용자에게 확인 팝업 띄우기
+      const actualUid = uids[0]; 
+      const userData = data[actualUid];
+
+      // 데이터 접근 시 옵셔널 체이닝(?.)을 사용해 에러 방지
+      const gName = userData?.name || userData?.profile?.name || "사용자";
+      const tempPhone = userData?.phone || "";
+
+      setLoading(false); // ★ 팝업 띄우기 전에 로딩을 먼저 풀어줍니다!
+
       Alert.alert(
         "보호자 확인",
         `${gName}님이 보호자가 맞으십니까?`,
         [
           { 
             text: "아니요", 
-            style: "cancel", 
-            onPress: () => setLoading(false) 
+            style: "cancel"
           },
           { 
             text: "네, 맞습니다", 
@@ -183,17 +188,12 @@ const handleSearchGuardian = async () => {
       );
     } else {
       setLoading(false);
-      Alert.alert("알림", "가입되지 않은 번호입니다.\n보호자님도 앱에 가입되어 있어야 합니다.");
-    }
-  } catch (error: any) {
-    setLoading(false);
-    console.error("검색 에러:", error);
-    
-    if (error.response?.status === 404) {
       Alert.alert("알림", "가입되지 않은 번호입니다.");
-    } else {
-      Alert.alert("에러", "검색 중 오류가 발생했습니다.");
     }
+  } catch (error) {
+    setLoading(false); // 에러 발생 시 무조건 로딩 해제
+    console.error("검색 에러 상세:", error);
+    Alert.alert("에러", "검색 중 알 수 없는 오류가 발생했습니다.");
   }
 };
 

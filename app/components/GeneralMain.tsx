@@ -1,6 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // ★ 추가
+import axios from 'axios'; // ★ 추가
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Modal,
@@ -12,8 +15,17 @@ import {
   View
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { auth } from '../../firebaseConfig'; // ★ 본인 ID 가져오기 위해 추가
 import { useAlertHistory, useAlertListener, useManagedUsers } from '../../src/chatfunction';
 import { homeStyles as styles } from '../../styles/homeStyles';
+
+// ★ 약 데이터 타입 정의
+type Medicine = {
+  id: number;
+  medicineName: string;
+  pillboxNumber: number;
+  alarmTime: string;
+};
 
 export default function HomeScreen() {
   const [currentTab, setCurrentTab] = useState('복약현황');
@@ -21,11 +33,16 @@ export default function HomeScreen() {
   const [timeStr, setTimeStr] = useState('');
   const [historyVisible, setHistoryVisible] = useState(false);
 
+  // ★ 본인 복약 정보 상태
+  const [nextMedicine, setNextMedicine] = useState<Medicine | null>(null);
+  const [medLoading, setMedLoading] = useState(true);
+
   const managedUsers = useManagedUsers();
   const { history, fetchHistory, loading } = useAlertHistory();
   
   useAlertListener();
 
+  // 1. 시간 업데이트
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -39,12 +56,53 @@ export default function HomeScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  // ★ 수정된 클릭 핸들러
+  // ★ 2. [수정됨] "본인(일반 사용자)"의 다음 복약 시간 계산
+  useEffect(() => {
+    const fetchNextMedicine = async () => {
+      try {
+        // 본인 UID 가져오기 (어르신 화면과 동일한 로직)
+        let savedUserId = await AsyncStorage.getItem('userId');
+        if (!savedUserId && auth.currentUser) {
+          savedUserId = auth.currentUser.uid;
+        }
+        
+        if (!savedUserId) {
+          setMedLoading(false);
+          return;
+        }
+
+        const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+        if (!baseUrl) return;
+
+        const response = await axios.get(`${baseUrl}/api/medicines/list/${savedUserId}`);
+        const medicines: Medicine[] = response.data;
+        
+        if (medicines.length === 0) {
+          setNextMedicine(null);
+          setMedLoading(false);
+          return;
+        }
+
+        const now = new Date();
+        const currentTimeString = now.toTimeString().split(' ')[0]; 
+        const sortedMeds = [...medicines].sort((a, b) => a.alarmTime.localeCompare(b.alarmTime));
+        const upcomingMed = sortedMeds.find((med) => med.alarmTime > currentTimeString);
+
+        setNextMedicine(upcomingMed || sortedMeds[0]); // 오늘 남은 약이 없으면 내일 첫 약
+      } catch (error) {
+        console.error("다음 약 계산 실패:", error);
+      } finally {
+        setMedLoading(false);
+      }
+    };
+
+    fetchNextMedicine();
+  }, []); // [] 한 번만 실행 (본인 약이므로)
+
+  // 알림 기록 핸들러 (기존 로직 유지)
   const handlePressBell = async () => {
     if (managedUsers && managedUsers.length > 0) {
-      // 1. 모달을 먼저 띄웁니다 (사용자 반응성 우선)
       setHistoryVisible(true);
-      // 2. 그 다음 데이터를 가져옵니다
       await fetchHistory(managedUsers[0].id);
     } else {
       Alert.alert("알림", "관리 중인 어르신이 없습니다.");
@@ -66,7 +124,7 @@ export default function HomeScreen() {
             <TouchableOpacity 
               style={styles.statusIconCircle} 
               activeOpacity={0.5}
-              onPress={handlePressBell} // 클릭 이벤트 연결 확인
+              onPress={handlePressBell}
             >
               <MaterialCommunityIcons name="bell-outline" size={22} color={Colors.danger} />
             </TouchableOpacity>
@@ -77,20 +135,33 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* --- 기존 카드 및 탭 로직 (생략 없이 유지) --- */}
+        {/* --- ★ [수정됨] 상단 복약 알림 카드 (본인 약 데이터 연동) --- */}
         <View style={styles.alertCard}>
           <View style={styles.alertHeader}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <MaterialCommunityIcons name="bell-outline" size={18} color="#FFF" />
               <Text style={styles.alertHeaderText}> 다음 복약</Text>
             </View>
-            <View style={styles.tag}><Text style={styles.tagText}>아침</Text></View>
+            <View style={styles.tag}><Text style={styles.tagText}>예정</Text></View>
           </View>
-          <Text style={styles.medTitle}>비타민 C</Text>
-          <Text style={styles.medTime}>복용 시간: 09:00 | 1정</Text>
-          <TouchableOpacity style={styles.whiteBtn}>
-            <Text style={styles.blueBtnText}>복용 완료</Text>
-          </TouchableOpacity>
+
+          {medLoading ? (
+            <ActivityIndicator size="small" color="#FFF" style={{ marginTop: 10, marginBottom: 10 }} />
+          ) : nextMedicine ? (
+            <>
+              <Text style={styles.medTitle}>{nextMedicine.medicineName}</Text>
+              <Text style={styles.medTime}>
+                복용 시간: {nextMedicine.alarmTime.substring(0, 5)} | {nextMedicine.pillboxNumber}번 칸
+              </Text>
+              <TouchableOpacity style={styles.whiteBtn}>
+                <Text style={styles.blueBtnText}>복용 확인</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={{ alignItems: 'center', paddingVertical: 10 }}>
+              <Text style={{ color: '#FFF', fontSize: 16 }}>등록된 약이 없습니다.</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.segmentContainer}>
@@ -113,12 +184,12 @@ export default function HomeScreen() {
         )}
       </ScrollView>
 
-      {/* --- ★ 모달 위치 확인: ScrollView 바깥, SafeAreaView 안쪽 끝 ★ --- */}
+      {/* --- 가족 메시지 전송 기록 모달 --- */}
       <Modal 
         visible={historyVisible} 
         animationType="slide" 
         transparent={true}
-        onRequestClose={() => setHistoryVisible(false)} // 안드로이드 뒤로가기 대응
+        onRequestClose={() => setHistoryVisible(false)}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ 
@@ -127,7 +198,7 @@ export default function HomeScreen() {
             borderTopLeftRadius: 25, 
             borderTopRightRadius: 25, 
             padding: 20,
-            elevation: 5 // 안드로이드 그림자
+            elevation: 5
           }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
               <Text style={{ fontSize: 20, fontWeight: 'bold' }}>가족 메시지 전송 기록</Text>

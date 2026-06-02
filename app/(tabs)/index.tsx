@@ -28,6 +28,3 @@ export default function MainEntry() {
   // 모드에 따라 컴포넌트만 교체
   return isSimpleMode ? <SeniorMain /> : <GeneralMain />;
 }
-
-
-

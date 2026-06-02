@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
+import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -18,7 +19,14 @@ import {
 import { auth } from '../../firebaseConfig';
 import { registerStyles as styles } from '../../styles/registerStyles';
 
-// 약 데이터 타입 정의
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 type Medicine = {
   id: number;
   medicineName: string;
@@ -35,16 +43,31 @@ export default function RegisterScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [alarmTimeStr, setAlarmTimeStr] = useState('시간 선택');
 
-  // --- 추가된 상태 관리 ---
-  const [medicines, setMedicines] = useState<Medicine[]>([]); // 약 목록 저장
+  const [medicines, setMedicines] = useState<Medicine[]>([]); 
   const [loading, setLoading] = useState(true);
 
-  // 화면 진입 시 약 목록 불러오기
   useEffect(() => {
     fetchMedicines();
+
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('권한 필요', '약 복용 알림을 받으려면 기기 설정에서 알림 권한을 허용해주세요.');
+      }
+
+      // 🟢 [추가됨] 안드로이드용 알림 채널(통로) 생성
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('medicine-alarm', {
+          name: '약 복용 알림',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+    };
+    requestPermissions();
   }, []);
 
-  // --- [기능 추가] 약 목록 불러오는 함수 ---
   const fetchMedicines = async () => {
     try {
       let savedUserId = await AsyncStorage.getItem('userId');
@@ -77,7 +100,6 @@ export default function RegisterScreen() {
     }
   };
 
-  // --- 약 등록 함수 ---
   const handleRegister = async () => {
     const pNumber = parseInt(pillboxNumber);
     if (!medicineName || !pillboxNumber || alarmTimeStr === '시간 선택') {
@@ -108,14 +130,36 @@ export default function RegisterScreen() {
         alarmTime: `${alarmTimeStr}:00` 
       });
 
-      if (response.status === 200) {
+if (response.status === 200) {
         Alert.alert("성공", "약 등록이 완료되었습니다!");
+        
+        const [hour, minute] = alarmTimeStr.split(':').map(Number);
+        
+        // 🟢 [수정된 부분] 설정에서 휴대폰 알림이 켜져 있는지 확인 후 알람 등록
+        const savedSetting = await AsyncStorage.getItem('phoneAlert');
+        const isAlertEnabled = savedSetting !== null ? JSON.parse(savedSetting) : true;
+
+        if (isAlertEnabled) {
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "💊 스마트 약통 알림",
+              body: `${medicineName} (${pNumber}번 칸) 드실 시간입니다! 잊지 말고 챙겨 드세요.`,
+              sound: true, 
+            },
+            trigger: {
+              hour: hour,
+              minute: minute,
+              repeats: true, 
+              channelId: 'medicine-alarm', 
+            },
+          });
+        }
+
         setModalVisible(false);
         setMedicineName('');
         setPillboxNumber('');
         setAlarmTimeStr('시간 선택');
         
-        // 🟢 등록 성공 후 목록 새로고침
         fetchMedicines();
       }
     } catch (error) {
@@ -124,7 +168,6 @@ export default function RegisterScreen() {
     }
   };
 
-  // --- [기능 추가] 약 삭제 함수 ---
   const handleDeleteMedicine = (id: number) => {
     Alert.alert(
       "약 삭제",
@@ -133,7 +176,7 @@ export default function RegisterScreen() {
         { text: "취소", style: "cancel" },
         { 
           text: "삭제", 
-          style: "destructive", // iOS에서 빨간색으로 표시됨
+          style: "destructive",
           onPress: async () => {
             try {
               const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -141,7 +184,7 @@ export default function RegisterScreen() {
               
               if (response.status === 200) {
                 Alert.alert("알림", "삭제되었습니다.");
-                fetchMedicines(); // 🟢 삭제 성공 시 목록을 다시 불러와 화면에서 없앰
+                fetchMedicines(); 
               }
             } catch (error) {
               console.error("약 삭제 실패:", error);
@@ -155,7 +198,6 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ScrollView 내부에 전체 콘텐츠를 감싸 스크롤바가 자연스럽게 생기도록 설정 */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.headerTitle}>스마트 약통</Text>
         
@@ -176,7 +218,6 @@ export default function RegisterScreen() {
           </View>
         </View>
 
-        {/* 🟢 [변경 영역] 등록된 약 정보 표시 섹션 */}
         <View style={localStyles.listSection}>
           <Text style={localStyles.sectionMenuTitle}>📋 등록된 약 목록</Text>
           
@@ -199,7 +240,6 @@ export default function RegisterScreen() {
                   <Text style={localStyles.timeText}>{item.alarmTime.substring(0, 5)}</Text>
                 </View>
 
-                {/* 🟢 [새로 추가된 쓰레기통 버튼] */}
                 <TouchableOpacity 
                   style={{ padding: 10, marginLeft: 5 }} 
                   onPress={() => handleDeleteMedicine(item.id)}
@@ -213,7 +253,6 @@ export default function RegisterScreen() {
         </View>
       </ScrollView>
 
-      {/* 모달 영역 (이전과 동일) */}
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={localStyles.modalOverlay}>
           <View style={localStyles.modalContent}>
@@ -245,7 +284,6 @@ const localStyles = StyleSheet.create({
   cancelBtn: { flex: 1, padding: 15, alignItems: 'center' },
   saveBtn: { flex: 1, padding: 15, backgroundColor: '#2E7D32', borderRadius: 10, alignItems: 'center' },
   
-  // 목록 스타일 추가
   listSection: { marginTop: 10, width: '100%', paddingHorizontal: 5 },
   sectionMenuTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 15 },
   medCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 15, borderRadius: 15, marginBottom: 12, borderWidth: 1, borderColor: '#ECECEC', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },

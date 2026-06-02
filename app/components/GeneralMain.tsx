@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // ★ 추가
-import axios from 'axios'; // ★ 추가
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,7 +15,7 @@ import {
   View
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { auth } from '../../firebaseConfig'; // ★ 본인 ID 가져오기 위해 추가
+import { auth } from '../../firebaseConfig';
 import { useAlertHistory, useAlertListener, useManagedUsers } from '../../src/chatfunction';
 import { homeStyles as styles } from '../../styles/homeStyles';
 
@@ -33,7 +33,6 @@ export default function HomeScreen() {
   const [timeStr, setTimeStr] = useState('');
   const [historyVisible, setHistoryVisible] = useState(false);
 
-  // ★ 본인 복약 정보 상태
   const [nextMedicine, setNextMedicine] = useState<Medicine | null>(null);
   const [medLoading, setMedLoading] = useState(true);
 
@@ -42,34 +41,16 @@ export default function HomeScreen() {
   
   useAlertListener();
 
-  // 1. 시간 업데이트
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const date = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
-      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-      setDateStr(date);
-      setTimeStr(time);
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000 * 60);
-    return () => clearInterval(timer);
-  }, []);
-
-  // ★ 2. [수정됨] "본인(일반 사용자)"의 다음 복약 시간 계산
+  // ★ [수정됨] 시간 업데이트 및 약 정보 실시간 갱신 (10초 주기 통합)
   useEffect(() => {
     const fetchNextMedicine = async () => {
       try {
-        // 본인 UID 가져오기 (어르신 화면과 동일한 로직)
         let savedUserId = await AsyncStorage.getItem('userId');
         if (!savedUserId && auth.currentUser) {
           savedUserId = auth.currentUser.uid;
         }
         
-        if (!savedUserId) {
-          setMedLoading(false);
-          return;
-        }
+        if (!savedUserId) return;
 
         const baseUrl = process.env.EXPO_PUBLIC_API_URL;
         if (!baseUrl) return;
@@ -79,7 +60,6 @@ export default function HomeScreen() {
         
         if (medicines.length === 0) {
           setNextMedicine(null);
-          setMedLoading(false);
           return;
         }
 
@@ -92,14 +72,32 @@ export default function HomeScreen() {
       } catch (error) {
         console.error("다음 약 계산 실패:", error);
       } finally {
-        setMedLoading(false);
+        setMedLoading(false); // 로딩 스피너는 최초 1회만 끄고 이후엔 조용히 갱신
       }
     };
 
-    fetchNextMedicine();
-  }, []); // [] 한 번만 실행 (본인 약이므로)
+    const updateTimeAndData = () => {
+      // 1. 현재 시간 갱신
+      const now = new Date();
+      const date = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+      setDateStr(date);
+      setTimeStr(time);
 
-  // 알림 기록 핸들러 (기존 로직 유지)
+      // 2. 서버에서 약 목록 재조회 및 계산
+      fetchNextMedicine();
+    };
+
+    // 화면 켜질 때 1번 즉시 실행
+    updateTimeAndData();
+
+    // 이후 10초(1000 * 10)마다 계속 반복
+    const timer = setInterval(updateTimeAndData, 1000 * 10);
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  // 알림 기록 핸들러 
   const handlePressBell = async () => {
     if (managedUsers && managedUsers.length > 0) {
       setHistoryVisible(true);
@@ -135,7 +133,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* --- ★ [수정됨] 상단 복약 알림 카드 (본인 약 데이터 연동) --- */}
+        {/* --- 상단 복약 알림 카드 --- */}
         <View style={styles.alertCard}>
           <View style={styles.alertHeader}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>

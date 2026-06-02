@@ -1,15 +1,17 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import axios from 'axios'; // ★ 추가됨
+import AsyncStorage from '@react-native-async-storage/async-storage'; // ★ 추가됨
+import axios from 'axios';
+import * as Notifications from 'expo-notifications'; // ★ 추가됨
 import {
   equalTo,
   get,
-  onValue, // ★ 추가됨
+  onValue,
   orderByChild,
   query,
   ref,
   update
 } from 'firebase/database';
-import React, { useEffect, useState, } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { settingStyles as styles } from '../../styles/settingStyles';
 
@@ -17,8 +19,6 @@ import { settingStyles as styles } from '../../styles/settingStyles';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
-
-
 
 function SettingSwitch({ label, subLabel, value, onValueChange }: any) {
   return (
@@ -40,10 +40,9 @@ export default function SettingScreen() {
   const [isBluetoothConnected, setIsBluetoothConnected] = useState(false);
   const [guardian, setGuardian] = useState({ name: '', phone: '', relation: '' });
   const [modalVisible, setModalVisible] = useState(false);
-  const [tempPhone, setTempPhone] = useState(''); // 검색할 전화번호만 관리
+  const [tempPhone, setTempPhone] = useState('');
   const [managedUsers, setManagedUsers] = useState<any[]>([]);
 
-  // 설정값 상태관리
   const [settings, setSettings] = useState({
     pushEnabled: true,
     ledEnabled: true,
@@ -58,27 +57,27 @@ export default function SettingScreen() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // 보호자 정보 실시간 리스너
     const guardianRef = ref(db, `users/${user.uid}/guardian`);
     const unsubGuardian = onValue(guardianRef, (snapshot) => {
       if (snapshot.exists()) setGuardian(snapshot.val());
       else setGuardian({ name: '', phone: '', relation: '' });
     });
 
-    // 설정 정보 실시간 리스너
     const settingsRef = ref(db, `users/${user.uid}/settings`);
     const unsubSettings = onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) setSettings(data);
+      if (data) {
+        setSettings(data);
+        // 앱을 켰을 때 DB에 설정된 푸시 알림 상태를 AsyncStorage에도 동기화
+        AsyncStorage.setItem('phoneAlert', JSON.stringify(data.pushEnabled));
+      }
       setLoading(false);
     });
 
-      // 관리자(B)인 경우, 내가 관리하는 환자들 목록 가져오기
     const managedRef = ref(db, `users/${user.uid}/managedUsers`);
     const unsubManaged = onValue(managedRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        // 객체 형태를 배열로 변환 [{uid: '...', name: '...'}, ...]
         const userList = Object.keys(data).map(key => ({
           uid: key,
           ...data[key]
@@ -89,16 +88,14 @@ export default function SettingScreen() {
       }
     });
 
-    
-
     return () => {
       unsubGuardian();
       unsubSettings();
-      unsubManaged()
+      unsubManaged();
     };
   }, []);
 
-  // 3. 관리 대상 삭제(연결 해제) 함수
+  // 3. 관리 대상 삭제
   const handleRemoveManagedUser = (patientUid: string, patientName: string) => {
     Alert.alert(
       "관리 중단",
@@ -113,9 +110,7 @@ export default function SettingScreen() {
               const myUid = auth.currentUser?.uid;
               const updates: any = {};
               
-              // 1. 내 목록(managedUsers)에서 삭제
               updates[`users/${myUid}/managedUsers/${patientUid}`] = null;
-              // 2. 상대방(guardian) 정보에서 나를 삭제
               updates[`users/${patientUid}/guardian`] = null;
 
               await update(ref(db), updates);
@@ -129,125 +124,105 @@ export default function SettingScreen() {
     );
   };
 
-  // 2. 보호자 검색 및 대조 함수
-// 2. 보호자 검색 및 대조 함수 (MySQL 서버 호출 방식으로 변경)
-const handleSearchGuardian = async () => {
-  const user = auth.currentUser;
-  if (!user) return;
-  if (!tempPhone) {
-    Alert.alert("알림", "전화번호를 입력해주세요.");
-    return;
-  }
-
-  setLoading(true); // 검색 시작 시 로딩 표시
-
-  try {
-    // [STEP 1] MySQL 서버에서 해당 번호로 가입된 사용자가 있는지 먼저 확인
-    // 이 과정에서 사용자 이름(name) 등을 가져옵니다.
-    const response = await axios.get(`${SERVER_URL}/api/users/search/${tempPhone}`);
-    const mysqlUser = response.data; // { userId: 'a@a.com', name: '홍길동', ... }
-
-    // [STEP 2] Firebase Realtime Database에서 해당 번호를 가진 유저의 '진짜 UID' 찾기
-    // Firebase는 경로에 마침표(.)를 못 쓰므로 이메일 대신 UID가 꼭 필요합니다.
-    const usersRef = ref(db, 'users');
-    const phoneQuery = query(usersRef, orderByChild('profile/phone'), equalTo(tempPhone));
-    const snapshot = await get(phoneQuery);
-
-if (snapshot.exists()) {
-      const data = snapshot.val();
-      const uids = Object.keys(data);
-      
-      if (uids.length === 0) {
-        setLoading(false);
-        Alert.alert("알림", "사용자 정보를 찾을 수 없습니다.");
-        return;
-      }
-
-      const actualUid = uids[0]; 
-      const userData = data[actualUid];
-
-      // 데이터 접근 시 옵셔널 체이닝(?.)을 사용해 에러 방지
-      const gName = userData?.name || userData?.profile?.name || "사용자";
-      const tempPhone = userData?.phone || "";
-
-      setLoading(false); // ★ 팝업 띄우기 전에 로딩을 먼저 풀어줍니다!
-
-      Alert.alert(
-        "보호자 확인",
-        `${gName}님이 보호자가 맞으십니까?`,
-        [
-          { 
-            text: "아니요", 
-            style: "cancel"
-          },
-          { 
-            text: "네, 맞습니다", 
-            onPress: () => finalizeConnection(user.uid, actualUid, gName, tempPhone) 
-          }
-        ]
-      );
-    } else {
-      setLoading(false);
-      Alert.alert("알림", "가입되지 않은 번호입니다.");
+  // 2. 보호자 검색 및 대조 
+  const handleSearchGuardian = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    if (!tempPhone) {
+      Alert.alert("알림", "전화번호를 입력해주세요.");
+      return;
     }
-  } catch (error) {
-    setLoading(false); // 에러 발생 시 무조건 로딩 해제
-    console.error("검색 에러 상세:", error);
-    Alert.alert("에러", "검색 중 알 수 없는 오류가 발생했습니다.");
-  }
-};
 
-  // 3. 실제 양방향 연동 실행
-const finalizeConnection = async (myUid: string, gUid: string, gName: string, gPhone: string) => {
-  setLoading(true); // 1. 로딩 시작
-  
-  try {
-    const updates: any = {};
+    setLoading(true); 
+
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/users/search/${tempPhone}`);
+      const mysqlUser = response.data; 
+
+      const usersRef = ref(db, 'users');
+      const phoneQuery = query(usersRef, orderByChild('profile/phone'), equalTo(tempPhone));
+      const snapshot = await get(phoneQuery);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const uids = Object.keys(data);
+        
+        if (uids.length === 0) {
+          setLoading(false);
+          Alert.alert("알림", "사용자 정보를 찾을 수 없습니다.");
+          return;
+        }
+
+        const actualUid = uids[0]; 
+        const userData = data[actualUid];
+
+        const gName = userData?.name || userData?.profile?.name || "사용자";
+        const tempPhone = userData?.phone || "";
+
+        setLoading(false); 
+
+        Alert.alert(
+          "보호자 확인",
+          `${gName}님이 보호자가 맞으십니까?`,
+          [
+            { text: "아니요", style: "cancel" },
+            { text: "네, 맞습니다", onPress: () => finalizeConnection(user.uid, actualUid, gName, tempPhone) }
+          ]
+        );
+      } else {
+        setLoading(false);
+        Alert.alert("알림", "가입되지 않은 번호입니다.");
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("검색 에러 상세:", error);
+      Alert.alert("에러", "검색 중 알 수 없는 오류가 발생했습니다.");
+    }
+  };
+
+  const finalizeConnection = async (myUid: string, gUid: string, gName: string, gPhone: string) => {
+    setLoading(true); 
     
-    // 2. 내 이름 가져오기 (Firebase 경로가 'profile/name'인지 'name'인지 확인 필수)
-    const mySnapshot = await get(ref(db, `users/${myUid}/profile/name`));
-    const myActualName = mySnapshot.exists() ? mySnapshot.val() : "알 수 없음";
+    try {
+      const updates: any = {};
+      const mySnapshot = await get(ref(db, `users/${myUid}/profile/name`));
+      const myActualName = mySnapshot.exists() ? mySnapshot.val() : "알 수 없음";
 
-    // 3. 내 정보에 보호자 연결
-    updates[`users/${myUid}/guardian`] = {
-      uid: gUid, // 반드시 S604... 같은 UID여야 함 (이메일 X)
-      name: gName,
-      phone: gPhone,
-      relation: "보호자",
-      connected: true
-    };
+      updates[`users/${myUid}/guardian`] = {
+        uid: gUid, 
+        name: gName,
+        phone: gPhone,
+        relation: "보호자",
+        connected: true
+      };
 
-    // 4. 보호자 정보에 나를 관리대상으로 추가
-    updates[`users/${gUid}/managedUsers/${myUid}`] = {
-      name: myActualName,
-      connected: true
-    };
+      updates[`users/${gUid}/managedUsers/${myUid}`] = {
+        name: myActualName,
+        connected: true
+      };
 
-    // 5. Firebase 양방향 업데이트 실행
-    await update(ref(db), updates);
+      await update(ref(db), updates);
 
-    // 6. MySQL 서버 관계 등록 (관계형 DB 연동)
-    await axios.post(`${SERVER_URL}/api/relation`, {
-      protectorId: gUid, 
-      seniorId: myUid,
-      relationType: "보호자"
-    });
+      await axios.post(`${SERVER_URL}/api/relation`, {
+        protectorId: gUid, 
+        seniorId: myUid,
+        relationType: "보호자"
+      });
 
-    Alert.alert("성공", `${gName}님과 연동되었습니다.`);
-    
-  } catch (error: any) {
-    console.error("연동 실패 상세:", error);
-    // 에러 메시지에 '.' 이나 '@' 관련 내용이 있다면 gUid가 이메일인 것입니다.
-    Alert.alert("오류", "연동 중 문제가 발생했습니다. (데이터 형식 확인)");
-  } finally {
-    // 7. 성공하든 실패하든 로딩과 모달을 닫아 무한 로딩 방지
-    setLoading(false); 
-    setModalVisible(false);
-    setTempPhone(''); // 입력창 초기화
-  }
-};
-  // 4. 설정 업데이트 함수
-  const toggleSetting = (key: string, value: any) => {
+      Alert.alert("성공", `${gName}님과 연동되었습니다.`);
+      
+    } catch (error: any) {
+      console.error("연동 실패 상세:", error);
+      Alert.alert("오류", "연동 중 문제가 발생했습니다. (데이터 형식 확인)");
+    } finally {
+      setLoading(false); 
+      setModalVisible(false);
+      setTempPhone(''); 
+    }
+  };
+
+  // ★ 4. [수정됨] 설정 업데이트 함수 (알림 취소/활성화 로직 추가)
+  const toggleSetting = async (key: string, value: any) => {
     const user = auth.currentUser;
     if (!user) return;
 
@@ -256,11 +231,27 @@ const finalizeConnection = async (myUid: string, gUid: string, gName: string, gP
       safeValue = 5; 
     }
 
+    // 🟢 푸시 알림 스위치를 조작했을 때
+    if (key === 'pushEnabled') {
+      try {
+        await AsyncStorage.setItem('phoneAlert', JSON.stringify(safeValue)); // 로컬 저장
+        
+        if (safeValue === false) {
+          // 알림 끄기: 기기에 등록된 모든 알람 일괄 취소
+          await Notifications.cancelAllScheduledNotificationsAsync();
+        } else {
+          // 알림 켜기: 안내 메시지
+          Alert.alert("알림 설정", "휴대폰 알림이 켜졌습니다.\n새로 등록하는 약부터 푸시 알림이 적용됩니다.");
+        }
+      } catch (error) {
+        console.error("알림 설정 변경 에러:", error);
+      }
+    }
+
     setSettings(prev => ({ ...prev, [key]: safeValue }));
     update(ref(db, `users/${user.uid}/settings`), { [key]: safeValue });
   };
 
-  // 5. 기타 함수 (로그아웃, 블루투스)
   const toggleBluetooth = () => {
     setIsBluetoothConnected(!isBluetoothConnected);
     Alert.alert("블루투스", !isBluetoothConnected ? "스마트 약통과 연결되었습니다." : "연결 해제됨");
@@ -336,7 +327,6 @@ const finalizeConnection = async (myUid: string, gUid: string, gName: string, gP
           </View>
         </View>
 
-
         {/* 화면 모드 설정 */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
@@ -376,6 +366,7 @@ const finalizeConnection = async (myUid: string, gUid: string, gName: string, gP
             <MaterialCommunityIcons name="bell-outline" size={20} color="#333" />
             <Text style={styles.sectionTitle}>알림 설정</Text>
           </View>
+          {/* 🟢 실제 알림 기능과 연동된 스위치 */}
           <SettingSwitch label="휴대폰 알림" subLabel="푸시 알림" value={settings.pushEnabled} onValueChange={(val: boolean) => toggleSetting('pushEnabled', val)} />
           <SettingSwitch label="부저 알림" subLabel="약통 소리" value={settings.buzzerEnabled} onValueChange={(val: boolean) => toggleSetting('buzzerEnabled', val)} />
           <SettingSwitch label="LED 표시등" subLabel="약통 불빛" value={settings.ledEnabled} onValueChange={(val: boolean) => toggleSetting('ledEnabled', val)} />

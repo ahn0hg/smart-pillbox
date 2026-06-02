@@ -1,9 +1,9 @@
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // ★ 추가
-import axios from 'axios'; // ★ 추가
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { onValue, ref, update } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Linking, Modal, SafeAreaView, StatusBar, Text, TouchableOpacity, View } from 'react-native'; // ★ ActivityIndicator 추가
+import { ActivityIndicator, Alert, FlatList, Linking, Modal, SafeAreaView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { auth, db } from '../../firebaseConfig';
 import { useAlertHistory, useAlertListener } from '../../src/chatfunction';
@@ -21,7 +21,7 @@ export default function SeniorHomeScreen() {
   const [dateStr, setDateStr] = useState('');
   const [timeStr, setTimeStr] = useState('');
   
-  // 기존 정적 상태 대신, 동적으로 계산된 약 정보를 저장할 상태
+  // 동적으로 계산된 약 정보를 저장할 상태
   const [nextMedicine, setNextMedicine] = useState<Medicine | null>(null); 
   const [medLoading, setMedLoading] = useState(true);
 
@@ -67,21 +67,7 @@ export default function SeniorHomeScreen() {
     getPhone();
   }, []);
 
-  // 3. 시간 업데이트 (1분마다)
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const date = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
-      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-      setDateStr(date);
-      setTimeStr(time);
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000 * 60);
-    return () => clearInterval(timer);
-  }, []);
-
-  // ★ 4. [신규] 다가오는 복약 시간 계산 로직
+  // ★ 3. [수정됨] 시간 업데이트 및 약 정보 실시간 갱신 (10초 주기 통합)
   useEffect(() => {
     const fetchNextMedicine = async () => {
       try {
@@ -92,12 +78,13 @@ export default function SeniorHomeScreen() {
         if (!savedUserId) return;
 
         const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+        if (!baseUrl) return;
+
         const response = await axios.get(`${baseUrl}/api/medicines/list/${savedUserId}`);
         const medicines: Medicine[] = response.data;
         
         if (medicines.length === 0) {
           setNextMedicine(null);
-          setMedLoading(false);
           return;
         }
 
@@ -110,11 +97,28 @@ export default function SeniorHomeScreen() {
       } catch (error) {
         console.error("다음 약 계산 실패:", error);
       } finally {
-        setMedLoading(false);
+        setMedLoading(false); // 로딩 스피너는 최초 1회만 끄고 이후엔 조용히 갱신
       }
     };
 
-    fetchNextMedicine();
+    const updateTimeAndData = () => {
+      // 1. 시간 갱신
+      const now = new Date();
+      const date = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+      const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+      setDateStr(date);
+      setTimeStr(time);
+
+      // 2. 약 정보 갱신
+      fetchNextMedicine();
+    };
+
+    // 화면 켜질 때 1번 즉시 실행
+    updateTimeAndData();
+    
+    // 이후 10초(1000 * 10)마다 반복
+    const timer = setInterval(updateTimeAndData, 1000 * 10);
+    return () => clearInterval(timer);
   }, []);
 
   // 버튼 액션 핸들러들
@@ -168,7 +172,7 @@ export default function SeniorHomeScreen() {
         </View>
       </View>
 
-      {/* ★ [수정됨] 복약 정보 카드 (정적 데이터 -> 동적 데이터 연동) */}
+      {/* ★ 복약 정보 카드 */}
       <View style={styles.infoCard}>
         {medLoading ? (
           <ActivityIndicator size="large" color="#1A73E8" style={{ marginTop: 40 }} />

@@ -1,7 +1,12 @@
 // 실행 npx expo start w
 // npx expo start --tunnel
+
+// 서버 관리
 // cd server
 //nodemon index.js
+
+//ip 확인 .env 확인
+// ipconfig 
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';

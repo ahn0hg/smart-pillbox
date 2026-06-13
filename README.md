@@ -1,5 +1,4 @@
-![8080 Banner](https://capsule-render.vercel.app/api?type=soft&color=auto&height=200&section=header&text=%20:8080&fontSize=90&fontColor=ffffff)
-# 💊 지켜약
+![Team 8080 Banner](https://capsule-render.vercel.app/api?type=soft&color=auto&height=200&section=header&text=%20:8080&fontSize=90&fontColor=ffffff)
 > **AI 기반 IoT 스마트 약통 연동 맞춤 케어 앱**
 
 

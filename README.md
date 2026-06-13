@@ -1,8 +1,9 @@
-![:8080 Banner](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=:8080&fontSize=120&fontColor=ffffff&desc=지켜약%20(Jikyeoyak)&descSize=30&descAlignY=75)
+![:8080 Banner](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=:8080&fontSize=140&fontColor=ffffff)
 
-![:8080 Banner](https://capsule-render.vercel.app/api?type=rect&color=0:00c6ff,100:0072ff&height=220&section=header&text=:8080&fontSize=110&fontColor=ffffff&desc=AI%20기반%20IoT%20스마트%20약통%20플랫폼&descSize=25&descAlignY=70)
+![:8080 Banner](https://capsule-render.vercel.app/api?type=rect&color=0:00c6ff,100:0072ff&height=220&section=header&text=:8080&fontSize=140&fontColor=ffffff)
 
-![:8080 Banner](https://capsule-render.vercel.app/api?type=soft&color=auto&height=200&section=header&text=:8080&fontSize=110&fontColor=ffffff)
+![:8080 Banner](https://capsule-render.vercel.app/api?type=soft&color=auto&height=200&section=header&text=:8080&fontSize=140&fontColor=ffffff)
+
 
 > **AI 기반 IoT 스마트 약통 연동 맞춤 케어 앱**
 

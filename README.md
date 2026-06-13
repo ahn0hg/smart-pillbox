@@ -12,14 +12,3 @@
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=transparent&text=:8080&fontSize=150&fontColor=777777" alt=":8080" />
 </div>
-6.
-<div align="center">
-  <br>
-  <h1>:8080</h1>
-  <hr style="width: 200px; margin: 20px auto;">
-  <br>
-</div>
-7. 
-<div align="center">
-  <img src="https://img.shields.io/badge/%20%20%20%20:8080%20%20%20%20-000000?style=for-the-badge" height="80" alt=":8080" />
-</div>

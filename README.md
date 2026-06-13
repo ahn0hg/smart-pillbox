@@ -10,5 +10,5 @@
 </div>
 5.
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=transparent&text=:8080&fontSize=150&fontColor=777777" alt=":8080" />
+  <img src="https://capsule-render.vercel.app/api?type=transparent&text=:8080&fontSize=150&fontColor=777777&height=300" alt=":8080" />
 </div>

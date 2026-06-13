@@ -24,7 +24,7 @@
 
 7.
 <div align="center">
-  <img src="https://readme-typing-svg.herokuapp.com/?font=Fira+Code&weight=900&size=150&color=FF2222&center=true&vCenter=true&width=800&height=300&lines=%3A8080" alt=":8080 Terminal Error" />
+  <img src="https://readme-typing-svg.herokuapp.com/?font=Fira+Code&weight=900&size=70&pause=1000&color=FF3333&center=true&vCenter=true&width=800&height=200&lines=%3E+npm+start;%5BERROR%5D+Port+3000+in+use!;%3E+Rerouting+port...;%3A8080" alt="Terminal Error Sequence" />
 </div>
 
 

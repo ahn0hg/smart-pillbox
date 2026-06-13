@@ -27,4 +27,9 @@
   <img src="https://readme-typing-svg.herokuapp.com/?font=Fira+Code&weight=900&size=70&pause=1000&color=FF3333&center=true&vCenter=true&width=800&height=200&lines=%3E+npm+start;%5BERROR%5D+Port+3000+in+use!;%3E+Rerouting+port...;%3A8080" alt="Terminal Error Sequence" />
 </div>
 
+8.
+<div align="center">
+  <img src="https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=45&pause=1200&color=27C93F&background=0D1117&center=false&vCenter=true&width=800&height=200&lines=%3E+npm+start;%5BERROR%5D+listen+EADDRINUSE+%3A%3A%3A3000;%3E+Rerouting+to+new+port...;%3A8080" alt="Real Terminal Animation" />
+</div>
+
 

@@ -21,3 +21,9 @@
 <div align="center">
   <img src="https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=28&pause=800&color=27C93F&background=0D1117&center=false&vCenter=false&width=800&height=250&multiline=true&lines=%3E+npm+start;%5BERROR%5D+Port+3000+is+already+in+use;%3E+Attempting+fallback...;%3E+Server+Successfully+Rerouted.;%3E+:8080" alt="Fixed Terminal Log" />
 </div>
+
+7.
+
+<div align="center">
+  <img src="https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=40&pause=500&color=27C93F&background=0D1117&center=true&vCenter=true&width=800&height=250&lines=%3E+npm+start;%5BERROR%5D+Port+3000+in+use;%3E+Attempting+fallback...;%3A8080" alt="Fixed Terminal Log" />
+</div>

@@ -19,11 +19,5 @@
 
 6.
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=rect&color=ff0000,8b0000&height=300&text=%3A8080&fontSize=160&fontColor=ffffff" alt=":8080 Error" />
-</div>
-
-7.
-
-<div align="center">
   <img src="https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=24&pause=1000&color=27C93F&background=0D1117&center=false&vCenter=false&width=800&height=300&lines=%3E+npm+start;%3E+npm+start%0D%0A%5Bpkg%5D+Starting+script...;%3E+npm+start%0D%0A%5Bpkg%5D+Starting+script...%0D%0A%5BERROR%5D+Port+3000+is+already+in+use;%3E+npm+start%0D%0A%5Bpkg%5D+Starting+script...%0D%0A%5BERROR%5D+Port+3000+is+already+in+use%0D%0A%3E+Attempting+fallback...;>+Listening+on+Port:;>+Listening+on+Port:%0D%0A%0D%0A%3Cspan+style='font-size:50px;color:%23FFF'%3E%3A8080%3C/span%3E" alt="Terminal Log Accumulation" />
 </div>

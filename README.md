@@ -16,3 +16,15 @@
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=transparent&text=:8080&fontSize=150&fontColor=777777&height=300" alt=":8080" />
 </div>
+
+6.
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=ff0000,8b0000&height=300&text=%3A8080&fontSize=160&fontColor=ffffff" alt=":8080 Error" />
+</div>
+
+7.
+<div align="center">
+  <img src="https://readme-typing-svg.herokuapp.com/?font=Fira+Code&weight=900&size=150&color=FF2222&center=true&vCenter=true&width=800&height=300&lines=%3A8080" alt=":8080 Terminal Error" />
+</div>
+
+

@@ -25,8 +25,7 @@
 7.
 
 <div align="center">
-  <img src="[https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=25&pause=1000&color=27C93F&background=0D1117&center=false&vCenter=true&width=800&height=120&lines=%3E+npm+start;%5BERROR%5D+listen+EADDRINUSE+%3A%3A%3A3000;%3E+Rerouting+to+new+port](https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=25&pause=1000&color=27C93F&background=0D1117&center=false&vCenter=true&width=800&height=120&lines=%3E+npm+start;%5BERROR%5D+listen+EADDRINUSE+%3A%3A%3A3000;%3E+Rerouting+to+new+port)..." alt="Terminal Log" />
-  <br>
-  <img src="[https://capsule-render.vercel.app/api?type=rect&color=0D1117&text=%3A8080&fontSize=160&fontColor=27C93F&height=250](https://capsule-render.vercel.app/api?type=rect&color=0D1117&text=%3A8080&fontSize=160&fontColor=27C93F&height=250)" alt=":8080" />
+  <img src="https://readme-typing-svg.herokuapp.com/?font=Consolas&weight=600&size=22&pause=1000&color=27C93F&background=0D1117&center=false&vCenter=true&width=800&height=120&lines=%3E+npm+start;%5BERROR%5D+listen+EADDRINUSE+%3A%3A%3A3000;%3E+Rerouting+to+new+port..." width="800" alt="Terminal Log" />
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=0D1117&text=%3A8080&fontSize=150&fontColor=27C93F&height=220" width="800" alt=":8080" />
 </div>
 
